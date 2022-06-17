@@ -19,7 +19,7 @@ class Message {
 // YOU - current user
 final User currentUser = User(
   id: 0,
-  name: 'G.A.M. Srl',
+  name: 'Softmaint Srl',
   imageUrl: 'assets/images/greg.jpg',
 );
 

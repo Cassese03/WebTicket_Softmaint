@@ -88,7 +88,6 @@ class _LoginPageState extends State<LoginPage> {
                             Container(
                               width: 300.0,
                               child: TextFormField(
-                                initialValue: snapshot.data,
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly
@@ -138,6 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                                   if (_formKey.currentState.validate()) {
                                     // ignore: deprecated_member_use
                                     List<LoginData> _session =
+                                        // ignore: deprecated_member_use
                                         List<LoginData>();
                                     await fetchLogin(numero).then((value) {
                                       _session.addAll(value);
@@ -290,7 +290,7 @@ class _LoginPageState extends State<LoginPage> {
               );
             } else {
               TextEditingController controller = TextEditingController();
-              controller.text = snapshot.data;
+              controller.text = snapshot.data.toString();
               return Scaffold(
                 backgroundColor: Colors.white,
                 body: Container(
@@ -298,7 +298,11 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      Image.asset('assets/logo.png'),
+                      Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Image.asset(
+                            'assets/logo.png',
+                          )),
                       const SizedBox(
                         height: 50.0,
                       ),
@@ -352,13 +356,16 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             ElevatedButton(
                               onPressed: () async {
+                                if (numero == null) numero = controller.text;
                                 bool internet =
                                     await InternetConnectionChecker()
                                         .hasConnection;
                                 if (internet) {
                                   if (_formKey.currentState.validate()) {
+                                    print(numero);
                                     // ignore: deprecated_member_use
                                     List<LoginData> _session =
+                                        // ignore: deprecated_member_use
                                         List<LoginData>();
                                     await fetchLogin(numero).then((value) {
                                       _session.addAll(value);
@@ -578,6 +585,6 @@ class DatabaseHelper {
     if (result.isEmpty)
       return '1';
     else
-      return result[1]["numero"];
+      return result[0]["numero"];
   }
 }

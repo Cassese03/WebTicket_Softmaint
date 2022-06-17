@@ -139,7 +139,7 @@ class _ChatScreenState extends State<ChatScreen23> {
       decoration: BoxDecoration(
         color: isMe
             ? Theme.of(context).colorScheme.secondary
-            : Color.fromRGBO(220, 248, 198, 10),
+            : Colors.lightBlueAccent,
         borderRadius: isMe
             ? BorderRadius.only(
                 topLeft: Radius.circular(15.0),
@@ -155,9 +155,10 @@ class _ChatScreenState extends State<ChatScreen23> {
           new ListTile(
             onTap: () {},
             leading: new CircleAvatar(
+              radius: 22,
               foregroundColor: Theme.of(context).primaryColor,
               backgroundColor: Colors.grey,
-              backgroundImage: AssetImage('assets/play_store_512.png'),
+              backgroundImage: AssetImage('assets/logo.png'),
             ),
             title: new Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -638,12 +639,12 @@ class _ChatScreenState extends State<ChatScreen23> {
 
   @override
   Widget build(BuildContext context) {
-    String contatto = widget.contatto;
+   // String contatto = widget.contatto;
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       appBar: AppBar(
         title: Text(
-          contatto,
+          'Sezione Ticket',
           style: TextStyle(
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
@@ -651,7 +652,7 @@ class _ChatScreenState extends State<ChatScreen23> {
         ),
         elevation: 0.0,
         //backgroundColor: Color(0x044A43),
-        backgroundColor: Color.fromARGB(174, 140, 235, 123),
+        backgroundColor: Colors.lightBlueAccent,
       ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
