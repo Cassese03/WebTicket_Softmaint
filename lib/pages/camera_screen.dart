@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:image_picker/image_picker.dart';
-
+import 'package:image_picker/image_picker.dart'; /*
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';*/
 import 'camera_view.dart';
+import 'video_view.dart';
 
 // ignore: must_be_immutable
 class CameraPage extends StatefulWidget {
@@ -24,7 +26,7 @@ class CameraPageState extends State<CameraPage> {
     final image = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (image == null) return;
     Navigator.push(
-        context,
+        this.context,
         MaterialPageRoute(
             builder: (builder) => CameraViewPage(
                 path: image.path,
@@ -65,7 +67,7 @@ class CameraPageState extends State<CameraPage> {
         ),
       );
     }
-
+    bool isRecording = false;
     //final size = MediaQuery.of(context).size;
     //final deviceRatio = size.width / size.height;
 
@@ -129,37 +131,53 @@ class CameraPageState extends State<CameraPage> {
                           onPressed: () {
                             pickImage();
                           }),
-                      InkWell(
-                        onTap: () async {
-                          /*
-                          pictureFile = await controller.takePicture();
+                      GestureDetector(
+                        onLongPress: () async {
+                          await controller.startVideoRecording();
                           setState(() {
-                            if (pictureFile != null) {
-                              // Image.file(File(pictureFile.path));
-                              File imageFile = new File(pictureFile.path);
-                              List<int> imageBytes =
-                                  imageFile.readAsBytesSync();
-                              print(imageBytes);
-                              String base64Image = base64Encode(imageBytes);
-                              print(base64Image);
-                            }
-                            //print(pictureFile.path.toString());
-                          }
-                          );*/
-                          pictureFile = await controller.takePicture();
+                            isRecording = true;
+                            print(isRecording);
+                          });
+                        },
+                        onLongPressUp: () async {
+                          XFile videoFile =
+                              await controller.stopVideoRecording();
+                          setState(() {
+                            print(isRecording);
+                            isRecording = false;
+                            print(isRecording);
+                          });
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (builder) => CameraViewPage(
-                                      path: pictureFile.path,
+                                  builder: (builder) => VideoViewPage(
+                                      path: videoFile.path,
                                       token: widget.token,
                                       contatto: widget.contatto)));
                         },
-                        child: Icon(
-                          Icons.panorama_fish_eye,
-                          color: Colors.white,
-                          size: 70,
-                        ),
+                        onTap: () async {
+                          if (isRecording == false) {
+                            pictureFile = await controller.takePicture();
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (builder) => CameraViewPage(
+                                        path: pictureFile.path,
+                                        token: widget.token,
+                                        contatto: widget.contatto)));
+                          }
+                        },
+                        child: isRecording
+                            ? Icon(
+                                Icons.radio_button_on,
+                                color: Colors.red,
+                                size: 70,
+                              )
+                            : Icon(
+                                Icons.panorama_fish_eye,
+                                color: Colors.white,
+                                size: 70,
+                              ),
                       ),
                       IconButton(
                           icon: Icon(
