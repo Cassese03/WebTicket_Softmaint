@@ -38,6 +38,7 @@ dependencies:
   internet_connection_checker:
   sqflite: ^2.0.2+1
   path_provider: ^2.0.10
+  loading_animations: ^2.2.0
 
 dev_dependencies:
   flutter_test:

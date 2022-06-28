@@ -4,26 +4,11 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterwhatsapp/api/sound_recorder.dart';
+import 'package:loading_animations/loading_animations.dart';
 import '../models/messages.dart';
 import '../models/user.dart';
 import 'package:http/http.dart' as http;
 import 'camera_screen.dart';
-/*
-import 'package:flutter_sound_lite/public/flutter_sound_player.dart';
-import 'package:flutter_sound_lite/public/flutter_sound_recorder.dart';
-import 'package:flutter_sound_lite/public/tau.dart';
-import 'package:flutter_sound_lite/public/ui/recorder_playback_controller.dart';
-import 'package:flutter_sound_lite/public/ui/sound_player_ui.dart';
-import 'package:flutter_sound_lite/public/ui/sound_recorder_ui.dart';
-import 'package:flutter_sound_lite/public/util/enum_helper.dart';
-import 'package:flutter_sound_lite/public/util/flutter_sound_ffmpeg.dart';
-import 'package:flutter_sound_lite/public/util/flutter_sound_helper.dart';
-import 'package:flutter_sound_lite/public/util/temp_file_system.dart';
-import 'package:flutter_sound_lite/public/util/wave_header.dart';*/
-//import 'package:flutterwhatsapp/pages/camera_screen.dart';
-//import 'package:flutterwhatsapp/models/risposta.dart';
-//import 'package:flutter_session/flutter_session.dart';
-//import '../models/login_data.dart';
 
 // ignore: must_be_immutable
 class ChatScreen23 extends StatefulWidget {
@@ -40,6 +25,7 @@ class ChatScreen23 extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen23> {
+  bool isLoading = false;
   final recorder = SoundRecorder();
   final audioplayer = AudioPlayer();
   Duration duration = Duration.zero;
@@ -187,17 +173,7 @@ class _ChatScreenState extends State<ChatScreen23> {
     }
     return Row(
       children: <Widget>[
-        msg, /*
-        IconButton(
-          icon: message.isLiked
-              ? Icon(Icons.favorite)
-              : Icon(Icons.favorite_border),
-          iconSize: 30.0,
-          color: message.isLiked
-              ? Theme.of(context).primaryColor
-              : Colors.blueGrey,
-          onPressed: () {},
-        )*/
+        msg,
       ],
     );
   }
@@ -208,19 +184,6 @@ class _ChatScreenState extends State<ChatScreen23> {
     bool isRecording = recorder.isRecording;
     bool recorded = widget.recorded;
 
-    /*
-    IconButton(
-          icon: Icon(Icons.mic),
-          onPressed: () async {
-            if (isPlaying == true) {
-              await audioplayer.pause();
-            } else {
-              await audioplayer.play(
-                  '/data/user/0/com.example.flutterwhatsapp/cache/audio_example.aac');
-            }
-          },
-        ),
-    */
     if (recorded == false) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -243,51 +206,7 @@ class _ChatScreenState extends State<ChatScreen23> {
                           contatto: widget.contatto),
                     ),
                   ),
-                ); /*
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return Dialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 30),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            const Text("Errore!",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                )),
-                            const Text("Funzionalità ancora non disponibile.",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                )),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            MaterialButton(
-                              onPressed: () async {
-                                setState(() {});
-                                Navigator.pop(context);
-                              },
-                              child: const Text("Esci",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  )),
-                              color: Color.fromARGB(174, 140, 235, 123),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              minWidth: double.infinity,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  });*/
+                );
               },
             ),
             Expanded(
@@ -316,10 +235,16 @@ class _ChatScreenState extends State<ChatScreen23> {
                     isRecording ? Colors.red : Theme.of(context).primaryColor,
                 onPressed: () async {
                   if (text != null && isWriting == true) {
+                    setState(() {
+                      isLoading = true;
+                    });
                     var risposta = await sendTicket(text, contatto, token);
                     // ignore: unrelated_type_equality_checks
                     if (risposta.statusCode == 200 ||
                         risposta.statusCode == 201) {
+                      setState(() {
+                        isLoading = false;
+                      });
                       showDialog(
                           context: context,
                           builder: (context) {
@@ -403,48 +328,7 @@ class _ChatScreenState extends State<ChatScreen23> {
                             );
                           });
                     }
-                  } /*else {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return Dialog(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 30),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  const Text("Errore!",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      )),
-                                  const Text(
-                                      "Impossibile mandare un ticket vuoto",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      )),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  MaterialButton(
-                                    onPressed: () async {
-                                      setState(() {});
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text("Riprova"),
-                                    color: Color.fromARGB(174, 140, 235, 123),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    minWidth: double.infinity,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        });
-                  }*/
+                  }
                   if (text == null && isWriting == false) {
                     final isRecording = await recorder.toggleRecording();
                     if (isRecording != null) {
@@ -501,26 +385,6 @@ class _ChatScreenState extends State<ChatScreen23> {
                   },
                 ),
               ),
-
-              /*
-              child: TextField(
-                
-                textCapitalization: TextCapitalization.sentences,
-                onChanged: (value) {
-                  text = value;
-                  if (text != '')
-                    setState(() {
-                      isWriting = true;
-                    });
-                  else
-                    setState(() {
-                      isWriting = false;
-                    });
-                },
-                decoration: InputDecoration.collapsed(
-                  hintText: 'Scrivi qui il tuo ticket...',
-                ),
-              ),*/
             ),
             IconButton(
                 icon: Icon(Icons.send),
@@ -528,6 +392,9 @@ class _ChatScreenState extends State<ChatScreen23> {
                 color: Colors.blue,
                 onPressed: () async {
                   if (widget.recorded == true) {
+                    setState(() {
+                      isLoading = true;
+                    });
                     String path =
                         '/data/user/0/com.example.flutterwhatsapp/cache/audio_example.mp4';
                     File file = File(path);
@@ -538,6 +405,9 @@ class _ChatScreenState extends State<ChatScreen23> {
                     // ignore: unrelated_type_equality_checks
                     if (risposta.statusCode == 200 ||
                         risposta.statusCode == 201) {
+                      setState(() {
+                        isLoading = false;
+                      });
                       showDialog(
                           context: context,
                           builder: (context) {
@@ -639,55 +509,71 @@ class _ChatScreenState extends State<ChatScreen23> {
 
   @override
   Widget build(BuildContext context) {
-   // String contatto = widget.contatto;
-    return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      appBar: AppBar(
-        title: Text(
-          'Sezione Ticket',
-          style: TextStyle(
-            fontSize: 20.0,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        elevation: 0.0,
-        //backgroundColor: Color(0x044A43),
-        backgroundColor: Colors.lightBlueAccent,
-      ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  image: new DecorationImage(
-                    image: ExactAssetImage('assets/Whatsapp.png'),
-                    fit: BoxFit.fill,
-                  ),
+    // String contatto = widget.contatto;
+    return isLoading
+        ? Container(
+            color: Colors.white,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Image.asset('assets/logo.png'),
+                SizedBox(
+                  height: 50,
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.0),
-                    topRight: Radius.circular(30.0),
-                  ),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.only(top: 15.0),
-                    itemCount: messages.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Message message = messages[index];
-                      final bool isMe = message.sender.id == currentUser.id;
-                      return _buildMessage(message, isMe);
-                    },
-                  ),
+                LoadingJumpingLine.circle()
+              ],
+            ),
+          )
+        : Scaffold(
+            backgroundColor: Theme.of(context).primaryColor,
+            appBar: AppBar(
+              title: Text(
+                'Sezione Ticket',
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+              elevation: 0.0,
+              //backgroundColor: Color(0x044A43),
+              backgroundColor: Colors.lightBlueAccent,
             ),
-            _buildMessageComposer(),
-          ],
-        ),
-      ),
-    );
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: new DecorationImage(
+                          image: ExactAssetImage('assets/Whatsapp.png'),
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30.0),
+                          topRight: Radius.circular(30.0),
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.only(top: 15.0),
+                          itemCount: messages.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final Message message = messages[index];
+                            final bool isMe =
+                                message.sender.id == currentUser.id;
+                            return _buildMessage(message, isMe);
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildMessageComposer(),
+                ],
+              ),
+            ),
+          );
   }
 }
