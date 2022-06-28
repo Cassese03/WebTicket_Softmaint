@@ -31,7 +31,7 @@ class VideoViewPageState extends State<VideoViewPage> {
 
   Future<http.Response> sendTicket(text, contatto, token, image) async {
     final response = await http.post(
-      Uri.parse('https://centralino.gamwki.it/api/crea_ticket/' + token),
+      Uri.parse('https://webticket.softmaint.it/api/crea_ticket/' + token),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -54,14 +54,14 @@ class VideoViewPageState extends State<VideoViewPage> {
 
   Future<http.Response> sendPath(text, path, contatto, token) async {
     final response = await http.post(
-      Uri.parse('https://centralino.gamwki.it/api/crea_ticket/' + token),
+      Uri.parse('https://webticket.softmaint.it/api/crea_ticket/' + token),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
         'messaggio': text,
         'contatto': contatto,
-        'immagine': path,
+        'video': path,
       }),
     );
     print(response.body);

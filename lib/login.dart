@@ -31,7 +31,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   Future<List<LoginData>> fetchLogin(numero) async {
-    var url = 'https://centralino.gamwki.it/api/login/' + numero;
+    var url = 'https://webticket.softmaint.it/api/login/' + numero;
 
     var response = await http.get(Uri.parse(url));
 

@@ -76,7 +76,7 @@ class _ChatScreenState extends State<ChatScreen23> {
   bool isWriting = false;
   Future<http.Response> sendTicket(text, contatto, token) async {
     final response = await http.post(
-      Uri.parse('https://centralino.gamwki.it/api/crea_ticket/' + token),
+      Uri.parse('https://webticket.softmaint.it/api/crea_ticket/' + token),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -99,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen23> {
 
   Future<http.Response> sendPath(text, path1, contatto, token) async {
     final response = await http.post(
-      Uri.parse('https://centralino.gamwki.it/api/crea_ticket/' + token),
+      Uri.parse('https://webticket.softmaint.it/api/crea_ticket/' + token),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },

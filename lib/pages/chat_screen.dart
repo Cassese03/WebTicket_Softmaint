@@ -20,7 +20,7 @@ class ChatScreenState extends State<ChatScreen> {
     //var token = await FlutterSession().get("token");
     var token = 'mDLKbai0cQwLl6F4x3mNVAFFHMiucVPdj3h3ahHYksM2TYZTIa';
 
-    var url = 'https://centralino.gamwki.it/api/ticket_aperti/' + token;
+    var url = 'https://webticket.softmaint.it/api/ticket_aperti/' + token;
 
     var response = await http.get(Uri.parse(url));
 
@@ -69,7 +69,7 @@ class ChatScreenState extends State<ChatScreen> {
               foregroundColor: Theme.of(context).primaryColor,
               backgroundColor: Colors.grey,
               backgroundImage: new NetworkImage(
-                  'https://centralino.gamwki.it/img/icona.png'),
+                  'https://webticket.softmaint.it/img/icona.png'),
             ),
             title: new Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

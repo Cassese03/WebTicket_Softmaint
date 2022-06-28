@@ -21,6 +21,7 @@ class CameraPageState extends State<CameraPage> {
   CameraController controller;
   XFile pictureFile;
   bool flash = false;
+  bool isRecording = false;
 
   Future pickImage() async {
     final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -67,9 +68,6 @@ class CameraPageState extends State<CameraPage> {
         ),
       );
     }
-    bool isRecording = false;
-    //final size = MediaQuery.of(context).size;
-    //final deviceRatio = size.width / size.height;
 
     return SafeArea(
       child: Material(
