@@ -1,6 +1,7 @@
 // ignore_for_file: await_only_futures
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:loading_animations/loading_animations.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -47,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
     return notes;
   }
 
+  bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
   var rememberValue = false;
   var numero;
@@ -65,460 +67,536 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: FutureBuilder<String>(
-          future: DatabaseHelper.instance.select(),
-          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-            if (!snapshot.hasData) {
-              return Scaffold(
-                backgroundColor: Colors.white,
-                body: Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Image.asset('assets/logo.png'),
-                      const SizedBox(
-                        height: 50.0,
-                      ),
-                      Form(
-                        key: _formKey,
+    return isLoading
+        ? Container(
+            color: Colors.white,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Image.asset('assets/logo.png'),
+                SizedBox(
+                  height: 50,
+                ),
+                LoadingJumpingLine.circle()
+              ],
+            ),
+          )
+        : Center(
+            child: FutureBuilder<String>(
+                future: DatabaseHelper.instance.select(),
+                builder:
+                    (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Scaffold(
+                      backgroundColor: Colors.white,
+                      body: Container(
                         child: Column(
-                          children: [
-                            Container(
-                              width: 300.0,
-                              child: TextFormField(
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                validator: (value) => (value.length) == 10
-                                    ? null
-                                    : "Inserire un numero di Telefono valido",
-                                onChanged: (val) {
-                                  if (val.length == 10) numero = val;
-                                },
-                                maxLines: 1,
-                                decoration: InputDecoration(
-                                  hintText: 'Scrivi qui il tuo numero',
-                                  prefixIcon: const Icon(Icons.phone),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Image.asset('assets/logo.png'),
+                            const SizedBox(
+                              height: 50.0,
+                            ),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: 300.0,
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                      validator: (value) => (value.length) == 10
+                                          ? null
+                                          : "Inserire un numero di Telefono valido",
+                                      onChanged: (val) {
+                                        if (val.length == 10) numero = val;
+                                      },
+                                      maxLines: 1,
+                                      decoration: InputDecoration(
+                                        hintText: 'Scrivi qui il tuo numero',
+                                        prefixIcon: const Icon(Icons.phone),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: 300.0,
-                              child: CheckboxListTile(
-                                title: const Text("Ricorda Numero"),
-                                contentPadding: EdgeInsets.zero,
-                                value: rememberValue,
-                                activeColor:
-                                    Theme.of(context).colorScheme.primary,
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    rememberValue = newValue;
-                                  });
-                                },
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                bool internet =
-                                    await InternetConnectionChecker()
-                                        .hasConnection;
-                                if (internet) {
-                                  if (_formKey.currentState.validate()) {
-                                    // ignore: deprecated_member_use
-                                    List<LoginData> _session =
-                                        // ignore: deprecated_member_use
-                                        List<LoginData>();
-                                    await fetchLogin(numero).then((value) {
-                                      _session.addAll(value);
-                                    });
-                                    if (_session.isNotEmpty) {
-                                      if (rememberValue == true)
-                                        await DatabaseHelper.instance.addNumero(
-                                          Grocery(numero: int.parse(numero)),
-                                        );
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                new ChatScreen23(
-                                                    token: _session[0]
-                                                        .token
-                                                        .toString(),
-                                                    contatto: _session[0]
-                                                        .contatto
-                                                        .toString())),
-                                      );
-                                    } else {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return Dialog(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          12)),
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 24,
-                                                        vertical: 30),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: <Widget>[
-                                                    const Text("Errore!",
-                                                        textAlign:
-                                                            TextAlign.right,
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        )),
-                                                    const Text(
-                                                        "Non riusciamo ad associare il numero selezionato ad un nostro cliente.",
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        )),
-                                                    const SizedBox(
-                                                      height: 16,
-                                                    ),
-                                                    MaterialButton(
-                                                      onPressed: () async {
-                                                        setState(() {});
-                                                        Navigator.pop(context);
-                                                      },
-                                                      child:
-                                                          const Text("Riprova"),
-                                                      color: Color.fromARGB(
-                                                          174, 140, 235, 123),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          8)),
-                                                      minWidth: double.infinity,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
+                                  Container(
+                                    width: 300.0,
+                                    child: CheckboxListTile(
+                                      title: const Text("Ricorda Numero"),
+                                      contentPadding: EdgeInsets.zero,
+                                      value: rememberValue,
+                                      activeColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          rememberValue = newValue;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      bool internet =
+                                          await InternetConnectionChecker()
+                                              .hasConnection;
+                                      if (internet) {
+                                        if (_formKey.currentState.validate()) {
+                                          // ignore: deprecated_member_use
+                                          List<LoginData> _session =
+                                              // ignore: deprecated_member_use
+                                              List<LoginData>();
+                                          await fetchLogin(numero)
+                                              .then((value) {
+                                            _session.addAll(value);
                                           });
-                                    }
-                                  }
-                                } else {
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return Dialog(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12)),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 24, vertical: 30),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                const Text("Errore!",
-                                                    textAlign: TextAlign.right,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    )),
-                                                const Text(
-                                                    "Non sei connesso ad Internet.",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    )),
-                                                const SizedBox(
-                                                  height: 16,
+                                          if (_session.isNotEmpty) {
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                            if (rememberValue == true)
+                                              await DatabaseHelper.instance
+                                                  .addNumero(
+                                                Grocery(
+                                                    numero: int.parse(numero)),
+                                              );
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      new ChatScreen23(
+                                                          token: _session[0]
+                                                              .token
+                                                              .toString(),
+                                                          contatto: _session[0]
+                                                              .contatto
+                                                              .toString())),
+                                            );
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                          } else {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Dialog(
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12)),
+                                                    child: Container(
+                                                      padding: const EdgeInsets
+                                                              .symmetric(
+                                                          horizontal: 24,
+                                                          vertical: 30),
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: <Widget>[
+                                                          const Text("Errore!",
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              )),
+                                                          const Text(
+                                                              "Non riusciamo ad associare il numero selezionato ad un nostro cliente.",
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              )),
+                                                          const SizedBox(
+                                                            height: 16,
+                                                          ),
+                                                          MaterialButton(
+                                                            onPressed:
+                                                                () async {
+                                                              setState(() {});
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: const Text(
+                                                                "Riprova"),
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    174,
+                                                                    140,
+                                                                    235,
+                                                                    123),
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8)),
+                                                            minWidth:
+                                                                double.infinity,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                });
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                          }
+                                        }
+                                      } else {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Dialog(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12)),
+                                                child: Container(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      horizontal: 24,
+                                                      vertical: 30),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: <Widget>[
+                                                      const Text("Errore!",
+                                                          textAlign:
+                                                              TextAlign.right,
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          )),
+                                                      const Text(
+                                                          "Non sei connesso ad Internet.",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          )),
+                                                      const SizedBox(
+                                                        height: 16,
+                                                      ),
+                                                      MaterialButton(
+                                                        onPressed: () async {
+                                                          setState(() {});
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: const Text(
+                                                            "Riprova"),
+                                                        color: Color.fromARGB(
+                                                            174, 140, 235, 123),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8)),
+                                                        minWidth:
+                                                            double.infinity,
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                                MaterialButton(
-                                                  onPressed: () async {
-                                                    setState(() {});
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text("Riprova"),
-                                                  color: Color.fromARGB(
-                                                      174, 140, 235, 123),
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8)),
-                                                  minWidth: double.infinity,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      });
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.fromLTRB(40, 15, 40, 15),
+                                              );
+                                            });
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          40, 15, 40, 15),
+                                    ),
+                                    child: const Text(
+                                      'Entra',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                ],
                               ),
-                              child: const Text(
-                                'Entra',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
+                            )
                           ],
                         ),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            } else {
-              TextEditingController controller = TextEditingController();
-              controller.text = snapshot.data.toString();
-              return Scaffold(
-                backgroundColor: Colors.white,
-                body: Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Image.asset(
-                            'assets/logo.png',
-                          )),
-                      const SizedBox(
-                        height: 50.0,
                       ),
-                      Form(
-                        key: _formKey,
+                    );
+                  } else {
+                    TextEditingController controller = TextEditingController();
+                    controller.text = snapshot.data.toString();
+                    return Scaffold(
+                      backgroundColor: Colors.white,
+                      body: Container(
                         child: Column(
-                          children: [
-                            Container(
-                              width: 300.0,
-                              child: TextFormField(
-                                controller: controller,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                validator: (value) => (value.length) == 10
-                                    ? null
-                                    : "Inserire un numero di Telefono valido",
-                                onChanged: (val) {
-                                  if (val.length == 10) numero = val;
-                                },
-                                maxLines: 1,
-                                decoration: InputDecoration(
-                                  hintText: 'Scrivi qui il tuo numero',
-                                  prefixIcon: const Icon(Icons.phone),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Image.asset(
+                                  'assets/logo.png',
+                                )),
+                            const SizedBox(
+                              height: 50.0,
+                            ),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: 300.0,
+                                    child: TextFormField(
+                                      controller: controller,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                      validator: (value) => (value.length) == 10
+                                          ? null
+                                          : "Inserire un numero di Telefono valido",
+                                      onChanged: (val) {
+                                        if (val.length == 10) numero = val;
+                                      },
+                                      maxLines: 1,
+                                      decoration: InputDecoration(
+                                        hintText: 'Scrivi qui il tuo numero',
+                                        prefixIcon: const Icon(Icons.phone),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: 300.0,
-                              child: CheckboxListTile(
-                                title: const Text("Ricorda Numero"),
-                                contentPadding: EdgeInsets.zero,
-                                value: rememberValue,
-                                activeColor:
-                                    Theme.of(context).colorScheme.primary,
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    rememberValue = newValue;
-                                  });
-                                },
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                if (numero == null) numero = controller.text;
-                                bool internet =
-                                    await InternetConnectionChecker()
-                                        .hasConnection;
-                                if (internet) {
-                                  if (_formKey.currentState.validate()) {
-                                    print(numero);
-                                    // ignore: deprecated_member_use
-                                    List<LoginData> _session =
-                                        // ignore: deprecated_member_use
-                                        List<LoginData>();
-                                    await fetchLogin(numero).then((value) {
-                                      _session.addAll(value);
-                                    });
-                                    if (_session.isNotEmpty) {
-                                      if (rememberValue == true)
-                                        await DatabaseHelper.instance.addNumero(
-                                          Grocery(numero: int.parse(numero)),
-                                        );
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                new ChatScreen23(
-                                                    token: _session[0]
-                                                        .token
-                                                        .toString(),
-                                                    contatto: _session[0]
-                                                        .contatto
-                                                        .toString())),
-                                      );
-                                    } else {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return Dialog(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          12)),
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 24,
-                                                        vertical: 30),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: <Widget>[
-                                                    const Text("Errore!",
-                                                        textAlign:
-                                                            TextAlign.right,
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        )),
-                                                    const Text(
-                                                        "Non riusciamo ad associare il numero selezionato ad un nostro cliente.",
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        )),
-                                                    const SizedBox(
-                                                      height: 16,
-                                                    ),
-                                                    MaterialButton(
-                                                      onPressed: () async {
-                                                        setState(() {});
-                                                        Navigator.pop(context);
-                                                      },
-                                                      child:
-                                                          const Text("Riprova"),
-                                                      color: Color.fromARGB(
-                                                          174, 140, 235, 123),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          8)),
-                                                      minWidth: double.infinity,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
+                                  Container(
+                                    width: 300.0,
+                                    child: CheckboxListTile(
+                                      title: const Text("Ricorda Numero"),
+                                      contentPadding: EdgeInsets.zero,
+                                      value: rememberValue,
+                                      activeColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          rememberValue = newValue;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      if (numero == null)
+                                        numero = controller.text;
+                                      bool internet =
+                                          await InternetConnectionChecker()
+                                              .hasConnection;
+                                      if (internet) {
+                                        if (_formKey.currentState.validate()) {
+                                          print(numero);
+                                          // ignore: deprecated_member_use
+                                          List<LoginData> _session =
+                                              // ignore: deprecated_member_use
+                                              List<LoginData>();
+                                          await fetchLogin(numero)
+                                              .then((value) {
+                                            _session.addAll(value);
                                           });
-                                    }
-                                  }
-                                } else {
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return Dialog(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12)),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 24, vertical: 30),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                const Text("Errore!",
-                                                    textAlign: TextAlign.right,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    )),
-                                                const Text(
-                                                    "Non sei connesso ad Internet.",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    )),
-                                                const SizedBox(
-                                                  height: 16,
+                                          if (_session.isNotEmpty) {
+                                            if (rememberValue == true)
+                                              await DatabaseHelper.instance
+                                                  .addNumero(
+                                                Grocery(
+                                                    numero: int.parse(numero)),
+                                              );
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      new ChatScreen23(
+                                                          token: _session[0]
+                                                              .token
+                                                              .toString(),
+                                                          contatto: _session[0]
+                                                              .contatto
+                                                              .toString())),
+                                            );
+                                          } else {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Dialog(
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12)),
+                                                    child: Container(
+                                                      padding: const EdgeInsets
+                                                              .symmetric(
+                                                          horizontal: 24,
+                                                          vertical: 30),
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: <Widget>[
+                                                          const Text("Errore!",
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              )),
+                                                          const Text(
+                                                              "Non riusciamo ad associare il numero selezionato ad un nostro cliente.",
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              )),
+                                                          const SizedBox(
+                                                            height: 16,
+                                                          ),
+                                                          MaterialButton(
+                                                            onPressed:
+                                                                () async {
+                                                              setState(() {});
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: const Text(
+                                                                "Riprova"),
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    174,
+                                                                    140,
+                                                                    235,
+                                                                    123),
+                                                            shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8)),
+                                                            minWidth:
+                                                                double.infinity,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                });
+                                          }
+                                        }
+                                      } else {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Dialog(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12)),
+                                                child: Container(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      horizontal: 24,
+                                                      vertical: 30),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: <Widget>[
+                                                      const Text("Errore!",
+                                                          textAlign:
+                                                              TextAlign.right,
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          )),
+                                                      const Text(
+                                                          "Non sei connesso ad Internet.",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          )),
+                                                      const SizedBox(
+                                                        height: 16,
+                                                      ),
+                                                      MaterialButton(
+                                                        onPressed: () async {
+                                                          setState(() {});
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: const Text(
+                                                            "Riprova"),
+                                                        color: Color.fromARGB(
+                                                            174, 140, 235, 123),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8)),
+                                                        minWidth:
+                                                            double.infinity,
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                                MaterialButton(
-                                                  onPressed: () async {
-                                                    setState(() {});
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text("Riprova"),
-                                                  color: Color.fromARGB(
-                                                      174, 140, 235, 123),
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8)),
-                                                  minWidth: double.infinity,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      });
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.fromLTRB(40, 15, 40, 15),
+                                              );
+                                            });
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          40, 15, 40, 15),
+                                    ),
+                                    child: const Text(
+                                      'Entra',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                ],
                               ),
-                              child: const Text(
-                                'Entra',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
+                            )
                           ],
                         ),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            }
-          }),
-    );
+                      ),
+                    );
+                  }
+                }),
+          );
   }
 }
 
@@ -583,7 +661,7 @@ class DatabaseHelper {
     List<Map> result =
         await db.rawQuery('SELECT numero FROM groceries ORDER BY id DESC');
     if (result.isEmpty)
-      return '1';
+      return '';
     else
       return result[0]["numero"];
   }
